@@ -66,7 +66,7 @@ export default function Navbar() {
             ))}
 
             <a
-              href="https://wa.me/6281234567890"
+              href="https://wa.me/6285157557523"
               onClick={() => setOpen(false)}
               className="rounded-xl border-2 border-[#3b2418] bg-[#ff6b2c] px-4 py-3 text-center text-white"
             >

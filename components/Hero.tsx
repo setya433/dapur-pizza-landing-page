@@ -37,7 +37,7 @@ export default function Hero() {
               Pesan Sekarang
             </a>
             <a
-              href="#menu"
+              href="/menu"
               className="rounded-xl border-2 border-[#3b2418] bg-white px-6 py-3 text-center text-sm font-bold uppercase shadow-[5px_5px_0_#3b2418] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
             >
               Lihat Menu
