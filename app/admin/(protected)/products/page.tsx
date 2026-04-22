@@ -34,6 +34,49 @@ type ProductFormState = {
   minOrder: string;
 };
 
+type RichTextNode = {
+  text?: string;
+};
+
+type RichTextBlock = string | { children?: RichTextNode[] };
+
+type StrapiCategorySource = {
+  id: number;
+  name?: string;
+  slug?: string;
+  attributes?: {
+    name?: string;
+    slug?: string;
+  };
+};
+
+type StrapiImageSource = {
+  url?: string;
+  attributes?: {
+    url?: string;
+  };
+};
+
+type StrapiProductSource = {
+  id: number;
+  name?: string;
+  slug?: string;
+  price?: number;
+  description?: string | RichTextBlock[];
+  badge?: string;
+  minOrder?: string;
+  category?: {
+    data?: StrapiCategorySource | null;
+  } | StrapiCategorySource | null;
+  image?: {
+    data?: StrapiImageSource | null;
+  } | StrapiImageSource | null;
+  attributes?: Omit<
+    StrapiProductSource,
+    "id" | "attributes"
+  >;
+};
+
 const initialForm: ProductFormState = {
   id: null,
   name: "",
@@ -44,7 +87,10 @@ const initialForm: ProductFormState = {
   minOrder: "",
 };
 
-function extractText(value: any): string {
+const STRAPI_PUBLIC_URL =
+  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
+function extractText(value: string | RichTextBlock[] | undefined): string {
   if (!value) return "";
 
   if (typeof value === "string") return value;
@@ -56,7 +102,7 @@ function extractText(value: any): string {
 
         if (block?.children && Array.isArray(block.children)) {
           return block.children
-            .map((child: any) => child?.text || "")
+            .map((child) => child?.text || "")
             .join("");
         }
 
@@ -65,79 +111,87 @@ function extractText(value: any): string {
       .join(" ");
   }
 
-  if (typeof value === "object") {
-    if (value?.children && Array.isArray(value.children)) {
-      return value.children.map((child: any) => child?.text || "").join("");
-    }
-  }
+  type RichTextChild = {
+  text?: string;
+};
+
+type RichTextNode = {
+  children?: RichTextChild[];
+};
+
+if (
+  typeof value === "object" &&
+  value !== null &&
+  "children" in value &&
+  Array.isArray((value as RichTextNode).children)
+) {
+  return (value as RichTextNode).children!.map((child) => child?.text || "").join("");
+}
 
   return "";
+}
+
+function mapCategory(item: StrapiCategorySource): CategoryOption {
+  if (item?.attributes) {
+    return {
+      id: item.id,
+      name: item.attributes.name || "",
+      slug: item.attributes.slug || "",
+    };
+  }
+
+  return {
+    id: item.id,
+    name: item.name || "",
+    slug: item.slug || "",
+  };
+}
+
+function mapProduct(item: StrapiProductSource): ProductItem {
+  const source = item?.attributes ? item.attributes : item;
+  const rawCategory = item.category ??  null;
+  const category = rawCategory ? mapCategory(rawCategory) : null;
+  const rawImage = source.image?.data ?? source.image ?? null;
+
+  console.log("MAPPING ITEM:", item);
+  console.log("MAPPING Image:", source.image, "=>", rawImage);
+
+  let image: string | null = null;
+
+  if (rawImage?.attributes?.url) {
+    image = rawImage.attributes.url.startsWith("http")
+      ? rawImage.attributes.url
+      : `${STRAPI_PUBLIC_URL}${rawImage.attributes.url}`;
+  } else if (rawImage?.url) {
+    image = rawImage.url.startsWith("http")
+      ? rawImage.url
+      : `${STRAPI_PUBLIC_URL}${rawImage.url}`;
+  }
+
+  return {
+    id: item.id,
+    name: source.name || "",
+    slug: source.slug || "",
+    price: source.price || 0,
+    description: extractText(source.description),
+    badge: source.badge ?? "",
+    minOrder: source.minOrder ?? "",
+    image,
+    category,
+  };
 }
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-
   const [form, setForm] = useState<ProductFormState>(initialForm);
-
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  function mapCategory(item: any): CategoryOption {
-    if (item?.attributes) {
-      return {
-        id: item.id,
-        name: item.attributes.name,
-        slug: item.attributes.slug,
-      };
-    }
-
-    return {
-      id: item.id,
-      name: item.name,
-      slug: item.slug,
-    };
-  }
-
-  function mapProduct(item: any): ProductItem {
-    const source = item?.attributes ? item.attributes : item;
-
-    const rawCategory = source.category?.data ?? source.category ?? null;
-    const category = rawCategory ? mapCategory(rawCategory) : null;
-
-    const rawImage = source.image?.data ?? source.image ?? null;
-
-    let image: string | null = null;
-
-    if (rawImage?.attributes?.url) {
-      image = rawImage.attributes.url.startsWith("http")
-        ? rawImage.attributes.url
-        : `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}${rawImage.attributes.url}`;
-    } else if (rawImage?.url) {
-      image = rawImage.url.startsWith("http")
-        ? rawImage.url
-        : `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}${rawImage.url}`;
-    }
-
-    return {
-      id: item.id,
-      name: source.name,
-      slug: source.slug,
-      price: source.price,
-      description: extractText(source.description),
-      badge: source.badge ?? "",
-      minOrder: source.minOrder ?? "",
-      image,
-      category,
-    };
-  }
 
   async function loadProducts() {
     const res = await fetch("/api/products", { cache: "no-store" });
@@ -153,41 +207,46 @@ export default function AdminProductsPage() {
     setProducts((data.data || []).map(mapProduct));
   }
 
-  async function loadCategories() {
-    const res = await fetch("/api/categories", { cache: "no-store" });
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("LOAD CATEGORIES FAILED:", res.status, text);
-      setCategories([]);
-      return;
-    }
-
-    const data = await res.json();
-    setCategories((data.data || []).map(mapCategory));
-  }
-
-  async function initLoad() {
-    try {
-      await Promise.all([loadProducts(), loadCategories()]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    initLoad();
+    void (async () => {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch("/api/products", { cache: "no-store" }),
+          fetch("/api/categories", { cache: "no-store" }),
+        ]);
+
+        if (!productsRes.ok) {
+          const text = await productsRes.text();
+          console.error("LOAD PRODUCTS FAILED:", productsRes.status, text);
+          setProducts([]);
+        } else {
+          const data = await productsRes.json();
+          setProducts((data.data || []).map(mapProduct));
+        }
+
+        if (!categoriesRes.ok) {
+          const text = await categoriesRes.text();
+          console.error("LOAD CATEGORIES FAILED:", categoriesRes.status, text);
+          setCategories([]);
+        } else {
+          const data = await categoriesRes.json();
+          setCategories((data.data || []).map(mapCategory));
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const filteredProducts = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const query = search.trim().toLowerCase();
 
     return products.filter((product) => {
       const matchSearch =
-        !q ||
-        product.name.toLowerCase().includes(q) ||
-        product.description?.toLowerCase().includes(q) ||
-        product.slug?.toLowerCase().includes(q);
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.description?.toLowerCase().includes(query) ||
+        product.slug?.toLowerCase().includes(query);
 
       const matchCategory =
         categoryFilter === "all" || product.category?.slug === categoryFilter;
@@ -251,43 +310,17 @@ export default function AdminProductsPage() {
     await loadProducts();
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
+  const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = event.target.files?.[0];
     if (!selected) return;
 
     setFile(selected);
     setPreview(URL.createObjectURL(selected));
   };
 
-  const uploadImage = async () => {
-    if (!file) return null;
-
-    const formData = new FormData();
-    formData.append("files", file);
-
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("UPLOAD IMAGE FAILED:", res.status, text);
-      throw new Error("Gagal upload gambar");
-    }
-
-    const data = await res.json();
-    return data?.[0]?.id ?? null;
-  };
-
   const handleSubmit = async () => {
-    if (!form.name.trim()) {
-      alert("Nama produk wajib diisi.");
-      return;
-    }
-
-    if (!form.price || Number(form.price) <= 0) {
-      alert("Harga produk harus lebih dari 0.");
+    if (!form.name.trim() || !form.price.trim()) {
+      alert("Nama produk dan harga wajib diisi.");
       return;
     }
 
@@ -297,23 +330,36 @@ export default function AdminProductsPage() {
       let imageId: number | null = null;
 
       if (file) {
-        imageId = await uploadImage();
+        const uploadFormData = new FormData();
+        uploadFormData.append("files", file);
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!uploadRes.ok) {
+          const text = await uploadRes.text();
+          console.error("UPLOAD FAILED:", uploadRes.status, text);
+          alert("Gagal upload gambar.");
+          return;
+        }
+
+        const uploadData = await uploadRes.json();
+        imageId = uploadData?.[0]?.id ?? null;
       }
 
-      const payload: Record<string, any> = {
+      const payload = {
         id: form.id,
         name: form.name,
         slug: slugify(form.name),
         price: Number(form.price),
         description: form.description,
+        category: form.category ? Number(form.category) : null,
         badge: form.badge,
         minOrder: form.minOrder,
-        category: form.category ? Number(form.category) : null,
+        image: imageId,
       };
-
-      if (imageId) {
-        payload.image = imageId;
-      }
 
       const res = await fetch("/api/products", {
         method: form.id ? "PUT" : "POST",
@@ -344,7 +390,7 @@ export default function AdminProductsPage() {
     <section>
       <AdminPageHeader
         title="Products"
-        description="Kelola daftar produk, harga, kategori, gambar, dan detail menu."
+        description="Kelola produk marketplace, edit detail, harga, dan kategorinya."
         action={
           <button
             onClick={openCreateModal}
@@ -363,7 +409,7 @@ export default function AdminProductsPage() {
           rightSlot={
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(event) => setCategoryFilter(event.target.value)}
               className="h-11 rounded-xl border border-[#E8E5DC] bg-white px-4 text-sm text-[#1F2937] outline-none"
             >
               <option value="all">All categories</option>
@@ -383,8 +429,8 @@ export default function AdminProductsPage() {
                 <th className="px-4 py-3 font-medium">Product</th>
                 <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Slug</th>
-                <th className="px-4 py-3 font-medium">Description</th>
+                <th className="px-4 py-3 font-medium">Badge</th>
+                <th className="px-4 py-3 font-medium">Min order</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
@@ -410,51 +456,32 @@ export default function AdminProductsPage() {
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-[#F3F4F6]">
-                          {product.image ? (
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              unoptimized
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-xs text-[#9CA3AF]">
-                              No Img
-                            </div>
-                          )}
-                        </div>
+                        {product.image ? (
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            width={56}
+                            height={56}
+                            unoptimized
+                            className="h-14 w-14 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#F3F4F6] text-xs text-[#6B7280]">
+                            No Image
+                          </div>
+                        )}
 
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold">{product.name}</p>
-                          {product.badge ? (
-                            <p className="mt-1 text-xs text-[#6B7280]">{product.badge}</p>
-                          ) : null}
+                        <div>
+                          <p className="font-semibold">{product.name}</p>
+                          <p className="mt-1 text-xs text-[#6B7280]">{product.slug}</p>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-4 py-4">
-                      {product.category ? (
-                        <span className="inline-flex rounded-full bg-[#F3F4F6] px-2.5 py-1 text-xs font-medium text-[#4B5563]">
-                          {product.category.name}
-                        </span>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-
-                    <td className="px-4 py-4 font-semibold">
-                      Rp {product.price.toLocaleString("id-ID")}
-                    </td>
-
-                    <td className="px-4 py-4 text-[#6B7280]">{product.slug}</td>
-
-                    <td className="max-w-[320px] px-4 py-4 text-[#6B7280]">
-                      <div className="line-clamp-2">{product.description || "-"}</div>
-                    </td>
-
+                    <td className="px-4 py-4">{product.category?.name ?? "-"}</td>
+                    <td className="px-4 py-4">Rp{product.price.toLocaleString("id-ID")}</td>
+                    <td className="px-4 py-4">{product.badge || "-"}</td>
+                    <td className="px-4 py-4">{product.minOrder || "-"}</td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-2">
                         <button
@@ -482,67 +509,65 @@ export default function AdminProductsPage() {
 
       {isModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+          <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#E8E5DC] px-6 py-4">
               <div>
                 <h2 className="text-xl font-semibold text-[#1F2937]">
                   {form.id ? "Edit Product" : "Add Product"}
                 </h2>
                 <p className="mt-1 text-sm text-[#6B7280]">
-                  Lengkapi detail produk untuk marketplace.
+                  Lengkapi detail produk sebelum disimpan ke marketplace.
                 </p>
               </div>
 
               <button
                 onClick={closeModal}
-                className="rounded-lg border border-[#E8E5DC] px-3 py-2 text-sm text-[#6B7280]"
+                className="rounded-full bg-[#F3F4F6] px-3 py-1 text-sm text-[#1F2937]"
               >
                 Close
               </button>
             </div>
 
-            <div className="space-y-5 px-6 py-6">
-              <div className="grid gap-5 md:grid-cols-2">
+            <div className="grid gap-6 px-6 py-6 md:grid-cols-2">
+              <div className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
-                    Product Name
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
+                    Product name
                   </label>
                   <input
                     type="text"
                     value={form.name}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, name: e.target.value }))
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, name: event.target.value }))
                     }
-                    placeholder="Contoh: Pepperoni Pizza"
-                    className="h-11 w-full rounded-xl border border-[#E8E5DC] px-4 text-sm outline-none focus:border-[#C79A52]"
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
                     Price
                   </label>
                   <input
                     type="number"
                     value={form.price}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, price: e.target.value }))
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, price: event.target.value }))
                     }
-                    placeholder="Contoh: 35000"
-                    className="h-11 w-full rounded-xl border border-[#E8E5DC] px-4 text-sm outline-none focus:border-[#C79A52]"
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
                     Category
                   </label>
                   <select
                     value={form.category}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, category: e.target.value }))
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, category: event.target.value }))
                     }
-                    className="h-11 w-full rounded-xl border border-[#E8E5DC] bg-white px-4 text-sm outline-none focus:border-[#C79A52]"
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   >
                     <option value="">Select category</option>
                     {categories.map((category) => (
@@ -554,93 +579,80 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
                     Badge
                   </label>
                   <input
                     type="text"
                     value={form.badge}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, badge: e.target.value }))
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, badge: event.target.value }))
                     }
-                    placeholder="Contoh: Best Seller"
-                    className="h-11 w-full rounded-xl border border-[#E8E5DC] px-4 text-sm outline-none focus:border-[#C79A52]"
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
-                    Minimum Order
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
+                    Minimum order
                   </label>
                   <input
                     type="text"
                     value={form.minOrder}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, minOrder: e.target.value }))
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, minOrder: event.target.value }))
                     }
-                    placeholder="Contoh: Minimal 10 box"
-                    className="h-11 w-full rounded-xl border border-[#E8E5DC] px-4 text-sm outline-none focus:border-[#C79A52]"
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   />
                 </div>
+              </div>
 
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
                     Description
                   </label>
                   <textarea
                     value={form.description}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, description: e.target.value }))
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, description: event.target.value }))
                     }
-                    rows={5}
-                    placeholder="Tulis deskripsi produk..."
-                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none focus:border-[#C79A52]"
+                    rows={8}
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
-                    Slug Preview
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#1F2937]">
+                    Product image
                   </label>
-                  <div className="rounded-xl border border-dashed border-[#E8E5DC] bg-[#FAFAF8] px-4 py-3 text-sm text-[#6B7280]">
-                    {form.name ? slugify(form.name) : "slug-produk-akan-muncul-di-sini"}
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-[#374151]">
-                    Product Image
-                  </label>
-
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFile}
-                    className="block w-full text-sm text-[#6B7280] file:mr-4 file:rounded-lg file:border-0 file:bg-[#F3F4F6] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#1F2937]"
+                    className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                   />
-
-                  {preview ? (
-                    <div className="mt-4">
-                      <div className="relative h-40 w-40 overflow-hidden rounded-2xl border border-[#E8E5DC] bg-[#F9FAFB]">
-                        <Image
-                          src={preview}
-                          alt="Preview"
-                          fill
-                          unoptimized
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
+
+                {preview ? (
+                  <div className="overflow-hidden rounded-2xl border border-[#E8E5DC]">
+                    <Image
+                      src={preview}
+                      alt="Preview"
+                      width={640}
+                      height={360}
+                      unoptimized
+                      className="h-56 w-full object-cover"
+                    />
+                  </div>
+                ) : null}
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-[#E8E5DC] px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-[#E8E5DC] px-6 py-4">
               <button
                 onClick={closeModal}
-                disabled={submitting}
-                className="rounded-xl border border-[#E8E5DC] px-4 py-2.5 text-sm font-medium text-[#374151] disabled:opacity-50"
+                className="rounded-xl border border-[#D1D5DB] px-4 py-2 text-sm font-medium text-[#1F2937]"
               >
                 Cancel
               </button>
@@ -648,13 +660,9 @@ export default function AdminProductsPage() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="rounded-xl bg-[#C79A52] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+                className="rounded-xl bg-[#0B1B4D] px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submitting
-                  ? "Saving..."
-                  : form.id
-                  ? "Update Product"
-                  : "Create Product"}
+                {submitting ? "Saving..." : "Save Product"}
               </button>
             </div>
           </div>

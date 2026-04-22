@@ -12,10 +12,14 @@ export async function createOrder(data: any) {
   return res.data;
 }
 
-export async function updateOrderStatus(id: number, status: string) {
-  const res = await axios.put(`http://localhost:1337/api/orders/${id}`, {
+export async function updateOrderStatus(documentId: string, statusOrder: string) {
+  console.log("Updating order status:", { documentId, statusOrder });
+
+
+  
+  const res = await axios.put(`http://localhost:1337/api/orders/${documentId}`, {
     data: {
-      status,
+      statusOrder,
     },
   });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
@@ -15,7 +15,7 @@ import {
 const menus = [
   {
     label: "Dashboard",
-    href: "/admin",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -30,13 +30,28 @@ const menus = [
   },
   {
     label: "Orders",
-    href: "/admin/order",
+    href: "/admin/orders",
     icon: ShoppingCart,
   },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const result = await signOut({
+      redirect: false,
+      callbackUrl: "/admin/login",
+    });
+
+    const nextPath = result.url
+      ? new URL(result.url, window.location.origin)
+      : new URL("/admin/login", window.location.origin);
+
+    router.replace(`${nextPath.pathname}${nextPath.search}${nextPath.hash}`);
+    router.refresh();
+  }
 
   return (
     <aside className="hidden w-[270px] shrink-0 flex-col border-r border-white/10 bg-[#0B1B4D] text-white lg:flex">
@@ -83,7 +98,7 @@ export default function AdminSidebar() {
         </Link>
 
         <button
-          onClick={() => signOut({ callbackUrl: "/admin/login" })}
+          onClick={handleLogout}
           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-200 transition hover:bg-red-500/10 hover:text-white"
         >
           <LogOut size={18} />

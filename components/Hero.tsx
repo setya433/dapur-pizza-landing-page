@@ -31,13 +31,13 @@ export default function Hero() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
             <a
-              href="https://wa.me/6285157557523"
+              href="/menu"
               className="rounded-xl border-2 border-[#3b2418] bg-[#ff6b2c] px-6 py-3 text-center text-sm font-bold uppercase text-white shadow-[5px_5px_0_#3b2418] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
             >
               Pesan Sekarang
             </a>
             <a
-              href="/menu"
+              href="/#menu"
               className="rounded-xl border-2 border-[#3b2418] bg-white px-6 py-3 text-center text-sm font-bold uppercase shadow-[5px_5px_0_#3b2418] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
             >
               Lihat Menu

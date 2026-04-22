@@ -12,6 +12,7 @@ export function mapOrder(item: any) {
     items: attr.items,
     total: attr.total,
     statusOrder: attr.statusOrder,
+    documentId: attr.documentId,
     createdAt: attr.createdAt,
   };
 }

@@ -29,11 +29,14 @@ export default function AdminOrdersClient() {
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const query = search.toLowerCase();
-
+    
+      console.log("RAW ORDER:", order);
       const matchSearch =
         !query ||
         order.customerName?.toLowerCase().includes(query) ||
         order.orderCode?.toLowerCase().includes(query);
+
+        
 
       const matchStatus =
         statusFilter === "all" || order.status === statusFilter;
@@ -42,8 +45,10 @@ export default function AdminOrdersClient() {
     });
   }, [orders, search, statusFilter]);
 
-  const handleUpdateStatus = async (id: number, status: string) => {
-    await updateOrderStatus(id, status);
+
+  const handleUpdateStatus = async (documentId: string, StatusOrder: string) => {
+    console.log("DI PAGE Updating order StatusOrder:", { documentId, StatusOrder });
+    await updateOrderStatus(documentId, StatusOrder);
     loadOrders();
   };
 
@@ -64,6 +69,7 @@ export default function AdminOrdersClient() {
             <option value="confirmed">Confirmed</option>
             <option value="processing">Processing</option>
             <option value="delivered">Delivered</option>
+            <option value="done">Done</option>
             <option value="cancelled">Cancelled</option>
           </select>
         }
@@ -98,6 +104,7 @@ export default function AdminOrdersClient() {
               </tr>
             ) : (
               filteredOrders.map((order) => (
+                
                 <tr
                   key={order.id}
                   className="border-b border-[#F3F4F6] text-[#1F2937] transition hover:bg-[#FAFAF8]"
@@ -130,30 +137,36 @@ export default function AdminOrdersClient() {
                     {formatRupiah(order.total)}
                   </td>
                   <td className="px-4 py-4">
-                    <StatusBadge status={order.status} />
+                    <StatusBadge status={order.statusOrder} />
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={() => handleUpdateStatus(order.id, "confirmed")}
+                        onClick={() => handleUpdateStatus(order.documentId, "confirmed")}
                         className="rounded-lg bg-[#2563EB] px-3 py-2 text-xs font-medium text-white"
                       >
                         Confirm
                       </button>
                       <button
-                        onClick={() => handleUpdateStatus(order.id, "processing")}
+                        onClick={() => handleUpdateStatus(order.documentId, "processing")}
                         className="rounded-lg bg-[#D97706] px-3 py-2 text-xs font-medium text-white"
                       >
                         Process
                       </button>
                       <button
-                        onClick={() => handleUpdateStatus(order.id, "delivered")}
+                        onClick={() => handleUpdateStatus(order.documentId, "delivered")}
                         className="rounded-lg bg-[#16A34A] px-3 py-2 text-xs font-medium text-white"
+                      >
+                        Delivery
+                      </button>
+                       <button
+                        onClick={() => handleUpdateStatus(order.documentId, "done")}
+                        className="rounded-lg bg-[#D7BFDC] px-3 py-2 text-xs font-medium text-white"
                       >
                         Done
                       </button>
                       <button
-                        onClick={() => handleUpdateStatus(order.id, "cancelled")}
+                        onClick={() => handleUpdateStatus(order.documentId, "cancelled")}
                         className="rounded-lg bg-[#DC2626] px-3 py-2 text-xs font-medium text-white"
                       >
                         Cancel

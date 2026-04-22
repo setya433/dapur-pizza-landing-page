@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
+import { getAdminSession } from "@/lib/auth";
 
 const BASE_URL = process.env.STRAPI_API_URL;
 const TOKEN = process.env.STRAPI_TOKEN;
 
 // GET
 export async function GET() {
+  const session = await getAdminSession();
+
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const res = await fetch(`${BASE_URL}/api/categories`, {
     headers: {
       Authorization: `Bearer ${TOKEN}`,
@@ -17,6 +24,12 @@ export async function GET() {
 
 // CREATE
 export async function POST(req: Request) {
+  const session = await getAdminSession();
+
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
 
   const res = await fetch(`${BASE_URL}/api/categories`, {
@@ -33,6 +46,12 @@ export async function POST(req: Request) {
 
 // UPDATE
 export async function PUT(req: Request) {
+  const session = await getAdminSession();
+
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
 
   const res = await fetch(
@@ -54,6 +73,12 @@ export async function PUT(req: Request) {
 
 // DELETE
 export async function DELETE(req: Request) {
+  const session = await getAdminSession();
+
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await req.json();
 
   await fetch(`${BASE_URL}/api/categories/${id}`, {

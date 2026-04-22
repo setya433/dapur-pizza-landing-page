@@ -16,6 +16,16 @@ type CategoryFormState = {
   name: string;
 };
 
+type CategorySource = {
+  id: number;
+  name?: string;
+  slug?: string;
+  attributes?: {
+    name?: string;
+    slug?: string;
+  };
+};
+
 const initialForm: CategoryFormState = {
   id: null,
   name: "",
@@ -24,14 +34,12 @@ const initialForm: CategoryFormState = {
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [search, setSearch] = useState("");
   const [form, setForm] = useState<CategoryFormState>(initialForm);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  function mapCategory(item: any): CategoryItem {
+  function mapCategory(item: CategorySource): CategoryItem {
     if (item?.attributes) {
       return {
         id: item.id,
@@ -61,26 +69,34 @@ export default function AdminCategoriesPage() {
     setCategories((data.data || []).map(mapCategory));
   }
 
-  async function initLoad() {
-    try {
-      await loadCategories();
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    initLoad();
+    void (async () => {
+      try {
+        const res = await fetch("/api/categories", { cache: "no-store" });
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("LOAD CATEGORIES FAILED:", res.status, text);
+          setCategories([]);
+          return;
+        }
+
+        const data = await res.json();
+        setCategories((data.data || []).map(mapCategory));
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const filteredCategories = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const query = search.trim().toLowerCase();
 
     return categories.filter((category) => {
       return (
-        !q ||
-        category.name.toLowerCase().includes(q) ||
-        category.slug.toLowerCase().includes(q)
+        !query ||
+        category.name.toLowerCase().includes(query) ||
+        category.slug.toLowerCase().includes(query)
       );
     });
   }, [categories, search]);
@@ -223,9 +239,7 @@ export default function AdminCategoriesPage() {
                     className="border-b border-[#F3F4F6] text-[#1F2937] transition hover:bg-[#FAFAF8]"
                   >
                     <td className="px-4 py-4 font-semibold">{category.name}</td>
-
                     <td className="px-4 py-4 text-[#6B7280]">{category.slug}</td>
-
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-2">
                         <button
@@ -260,49 +274,38 @@ export default function AdminCategoriesPage() {
                   {form.id ? "Edit Category" : "Add Category"}
                 </h2>
                 <p className="mt-1 text-sm text-[#6B7280]">
-                  Tambahkan atau perbarui kategori untuk produk marketplace.
+                  Atur kategori agar produk lebih mudah dikelola.
                 </p>
               </div>
 
               <button
                 onClick={closeModal}
-                className="rounded-lg border border-[#E8E5DC] px-3 py-2 text-sm text-[#6B7280]"
+                className="rounded-full bg-[#F3F4F6] px-3 py-1 text-sm text-[#1F2937]"
               >
                 Close
               </button>
             </div>
 
-            <div className="space-y-5 px-6 py-6">
+            <div className="space-y-4 px-6 py-6">
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#374151]">
-                  Category Name
+                <label className="mb-2 block text-sm font-medium text-[#1F2937]">
+                  Category name
                 </label>
                 <input
                   type="text"
                   value={form.name}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, name: event.target.value }))
                   }
-                  placeholder="Contoh: Pizza"
-                  className="h-11 w-full rounded-xl border border-[#E8E5DC] px-4 text-sm outline-none focus:border-[#C79A52]"
+                  className="w-full rounded-xl border border-[#E8E5DC] px-4 py-3 text-sm outline-none"
                 />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-[#374151]">
-                  Slug Preview
-                </label>
-                <div className="rounded-xl border border-dashed border-[#E8E5DC] bg-[#FAFAF8] px-4 py-3 text-sm text-[#6B7280]">
-                  {form.name ? slugify(form.name) : "slug-kategori-akan-muncul-di-sini"}
-                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-[#E8E5DC] px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-[#E8E5DC] px-6 py-4">
               <button
                 onClick={closeModal}
-                disabled={submitting}
-                className="rounded-xl border border-[#E8E5DC] px-4 py-2.5 text-sm font-medium text-[#374151] disabled:opacity-50"
+                className="rounded-xl border border-[#D1D5DB] px-4 py-2 text-sm font-medium text-[#1F2937]"
               >
                 Cancel
               </button>
@@ -310,13 +313,9 @@ export default function AdminCategoriesPage() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="rounded-xl bg-[#C79A52] px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+                className="rounded-xl bg-[#0B1B4D] px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submitting
-                  ? "Saving..."
-                  : form.id
-                  ? "Update Category"
-                  : "Create Category"}
+                {submitting ? "Saving..." : "Save Category"}
               </button>
             </div>
           </div>
