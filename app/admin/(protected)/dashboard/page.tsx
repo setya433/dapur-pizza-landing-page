@@ -24,6 +24,7 @@ type ChartDatum = {
 
 type ProductItem = {
   id: number;
+  documentId: string;
 };
 
 type CategoryItem = {

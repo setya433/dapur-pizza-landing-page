@@ -18,6 +18,7 @@ type ProductItem = {
   slug: string;
   price: number;
   description?: string;
+  documentId: string;
   badge?: string;
   minOrder?: string;
   image?: string | null;
@@ -31,6 +32,7 @@ type ProductFormState = {
   description: string;
   category: string;
   badge: string;
+  documentId: string;
   minOrder: string;
 };
 
@@ -58,6 +60,7 @@ type StrapiImageSource = {
 };
 
 type StrapiProductSource = {
+  documentId: string;
   id: number;
   name?: string;
   slug?: string;
@@ -79,6 +82,7 @@ type StrapiProductSource = {
 
 const initialForm: ProductFormState = {
   id: null,
+  documentId: "",
   name: "",
   price: "",
   description: "",
@@ -171,6 +175,7 @@ function mapProduct(item: StrapiProductSource): ProductItem {
   return {
     id: item.id,
     name: source.name || "",
+    documentId: item.documentId,
     slug: source.slug || "",
     price: source.price || 0,
     description: extractText(source.description),
@@ -278,37 +283,69 @@ export default function AdminProductsPage() {
       name: product.name,
       price: String(product.price),
       description: product.description ?? "",
+      documentId: product.documentId,
       category: product.category ? String(product.category.id) : "",
       badge: product.badge ?? "",
       minOrder: product.minOrder ?? "",
     });
+
+    console.log("EDITING PRODUCT:", setForm, product);
 
     setFile(null);
     setPreview(product.image ?? null);
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm("Yakin hapus produk ini?");
-    if (!confirmed) return;
+  // const handleDelete = async (id: number) => {
+  //   const confirmed = window.confirm("Yakin hapus produk ini?");
+    
+  //   if (!confirmed) return;
 
-    const res = await fetch("/api/products", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id }),
-    });
+  //   const res = await fetch("/api/products", {
+  //     method: "DELETE",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ id }),
+  //   });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("DELETE PRODUCT FAILED:", res.status, text);
-      alert("Gagal menghapus produk.");
-      return;
-    }
+  //   console.log("DELETING PRODUCT ID:", id);
+  //   console.log("DELETE RESPONSE:", res.status, res.statusText);
 
-    await loadProducts();
-  };
+  //   if (!res.ok) {
+  //     const text = await res.text();
+  //     console.error("DELETE PRODUCT FAILED:", res.status, text);
+  //     alert("Gagal menghapus produk.");
+  //     return;
+  //   }
+
+  //   await loadProducts();
+  // };
+
+  const handleDelete = async (documentId: string) => {
+  const confirmed = window.confirm("Yakin hapus produk ini?");
+  if (!confirmed) return;
+
+  const res = await fetch("/api/products", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ documentId }),
+  });
+
+  console.log("DELETING PRODUCT DOCUMENT ID:", documentId);
+  console.log("DELETE RESPONSE:", res.status, res.statusText);
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("DELETE PRODUCT FAILED:", res.status, text);
+    alert("Gagal menghapus produk.");
+    return;
+  }
+
+  await loadProducts();
+};
 
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
@@ -350,16 +387,27 @@ export default function AdminProductsPage() {
       }
 
       const payload = {
-        id: form.id,
-        name: form.name,
-        slug: slugify(form.name),
-        price: Number(form.price),
-        description: form.description,
-        category: form.category ? Number(form.category) : null,
-        badge: form.badge,
-        minOrder: form.minOrder,
-        image: imageId,
-      };
+  id: form.id,
+  name: form.name,
+  documentId: form.documentId,
+  slug: slugify(form.name),
+  price: Number(form.price),
+  description: [
+    {
+      type: "paragraph",
+      children: [
+        {
+          type: "text",
+          text: form.description,
+        },
+      ],
+    },
+  ],
+  category: form.category ? Number(form.category) : null,
+  badge: form.badge,
+  minOrder: form.minOrder,
+  ...(imageId && { image: imageId }),
+};
 
       const res = await fetch("/api/products", {
         method: form.id ? "PUT" : "POST",
@@ -368,6 +416,9 @@ export default function AdminProductsPage() {
         },
         body: JSON.stringify(payload),
       });
+
+      console.log("SUBMITTING PRODUCT:", payload);
+      console.log("RESPONSE:", res.status, res.statusText);
 
       if (!res.ok) {
         const text = await res.text();
@@ -492,7 +543,7 @@ export default function AdminProductsPage() {
                         </button>
 
                         <button
-                          onClick={() => handleDelete(product.id)}
+                          onClick={() => handleDelete(product.documentId)}
                           className="rounded-lg bg-[#DC2626] px-3 py-2 text-xs font-medium text-white"
                         >
                           Delete

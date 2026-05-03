@@ -28,6 +28,7 @@ export function mapProduct(item: any) {
     id: attr.id ?? item.id,
     name: attr.name ?? "",
     slug: attr.slug ?? "",
+    documentId: attr.documentId ?? "",
     price: Number(attr.price ?? 0),
     description: blocksToText(attr.description),
     category: attr.category ?? null,

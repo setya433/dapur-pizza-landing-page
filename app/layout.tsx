@@ -15,24 +15,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DapurPizza | Catering Pizza, Nasi Box, Snack Box & Paket Acara",
+  title: "Catering Nasi Box, Aqiqah & Acara Kendal | Dapurpizza Premium Catering",
   description:
-    "DapurPizza melayani catering pizza, nasi box, snack box, dan paket konsumsi untuk meeting, kantor, sekolah, ulang tahun, dan berbagai acara.",
+    "Dapurpizza Premium Catering Kendal melayani catering pernikahan, aqiqah, nasi box, dan berbagai acara penting dengan sajian berkualitas, higienis, dan tampilan elegan.",
   keywords: [
-    "catering pizza",
-    "nasi box",
-    "snack box",
-    "catering acara",
-    "catering kantor",
-    "pizza event",
-    "DapurPizza",
+    "catering Kendal",
+    "catering aqiqah Kendal",
+    "nasi box Kendal",
+    "catering pernikahan Kendal",
+    "catering acara Kendal",
+    "catering premium Kendal",
+    "Dapurpizza catering",
   ],
   openGraph: {
-    title: "DapurPizza",
+    title: "Dapurpizza Premium Catering Kendal",
     description:
-      "Catering pizza, nasi box, snack box, dan paket acara untuk berbagai kebutuhan.",
+      "Catering premium untuk pernikahan, aqiqah, nasi box, dan acara penting di Kendal.",
     url: "https://dapurpizza.com",
-    siteName: "DapurPizza",
+    siteName: "Dapurpizza Catering Kendal",
     locale: "id_ID",
     type: "website",
   },
