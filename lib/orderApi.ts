@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:1337/api";
+const API_URL = "https://striking-bell-1f63db83d6.strapiapp.com/api";
 
 export async function createOrder(data: any) {
   const res = await axios.post(`${API_URL}/orders`, {
@@ -17,7 +17,7 @@ export async function updateOrderStatus(documentId: string, statusOrder: string)
 
 
   
-  const res = await axios.put(`http://localhost:1337/api/orders/${documentId}`, {
+  const res = await axios.put(`https://striking-bell-1f63db83d6.strapiapp.com/api/orders/${documentId}`, {
     data: {
       statusOrder,
     },
@@ -28,7 +28,7 @@ export async function updateOrderStatus(documentId: string, statusOrder: string)
 
 export async function fetchOrders() {
   const res = await axios.get(
-    "http://localhost:1337/api/orders?sort=createdAt:desc"
+    "https://striking-bell-1f63db83d6.strapiapp.com/api/orders?sort=createdAt:desc"
   );
 
     console.log("ORDER GET:", res.data);

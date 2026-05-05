@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:1337/api";
+const API_URL = "https://striking-bell-1f63db83d6.strapiapp.com/api";
 
 export async function fetchCategories() {
   const res = await axios.get(`${API_URL}/categories?sort=name:asc`);
