@@ -4,12 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        // protocol: "http",
-        // hostname: "localhost",
-        // port: "1337",
-        // pathname: "/uploads/**",
         protocol: "https",
-        hostname: "nama-project.strapiapp.com",
+        hostname: "striking-bell-1f63db83d6.strapiapp.com",
         pathname: "/uploads/**",
       },
     ],

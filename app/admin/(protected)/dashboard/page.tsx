@@ -24,7 +24,7 @@ type ChartDatum = {
 
 type ProductItem = {
   id: number;
-  documentId: string;
+  documentId?: string;
 };
 
 type CategoryItem = {
@@ -47,8 +47,8 @@ export default function AdminDashboardPage() {
         ]);
 
         setOrders((ordersRes || []).map(mapOrder));
-        setProducts(productsRes?.data || []);
-        setCategories(categoriesRes?.data || []);
+        setProducts(productsRes || []);
+        setCategories(categoriesRes || []);
       } catch (error) {
         console.error("DASHBOARD LOAD FAILED:", error);
         setOrders([]);

@@ -7,12 +7,14 @@ import { slugify } from "@/lib/slugify";
 
 type CategoryItem = {
   id: number;
+  documentId: string;
   name: string;
   slug: string;
 };
 
 type CategoryFormState = {
   id: number | null;
+  documentId: string;
   name: string;
 };
 
@@ -29,6 +31,7 @@ type CategorySource = {
 const initialForm: CategoryFormState = {
   id: null,
   name: "",
+  documentId: "",
 };
 
 export default function AdminCategoriesPage() {
@@ -39,21 +42,16 @@ export default function AdminCategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  function mapCategory(item: CategorySource): CategoryItem {
-    if (item?.attributes) {
-      return {
-        id: item.id,
-        name: item.attributes.name,
-        slug: item.attributes.slug,
-      };
-    }
+  function mapCategory(item: any): CategoryItem {
+  const source = item?.attributes ? item.attributes : item;
 
-    return {
-      id: item.id,
-      name: item.name,
-      slug: item.slug,
-    };
-  }
+  return {
+    id: item.id,
+    documentId: item.documentId,
+    name: source.name || "",
+    slug: source.slug || "",
+  };
+}
 
   async function loadCategories() {
     const res = await fetch("/api/categories", { cache: "no-store" });
@@ -116,36 +114,37 @@ export default function AdminCategoriesPage() {
     resetForm();
   };
 
-  const handleEdit = (category: CategoryItem) => {
-    setForm({
-      id: category.id,
-      name: category.name,
-    });
+   const handleEdit = (category: CategoryItem) => {
+  setForm({
+    id: category.id,
+    documentId: category.documentId,
+    name: category.name,
+  });
 
-    setIsModalOpen(true);
-  };
+  setIsModalOpen(true);
+};
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm("Yakin hapus kategori ini?");
-    if (!confirmed) return;
+  const handleDelete = async (documentId: string) => {
+  const confirmed = window.confirm("Yakin hapus kategori ini?");
+  if (!confirmed) return;
 
-    const res = await fetch("/api/categories", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id }),
-    });
+  const res = await fetch("/api/categories", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ documentId }),
+  });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("DELETE CATEGORY FAILED:", res.status, text);
-      alert("Gagal menghapus kategori.");
-      return;
-    }
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("DELETE CATEGORY FAILED:", res.status, text);
+    alert("Gagal menghapus kategori.");
+    return;
+  }
 
-    await loadCategories();
-  };
+  await loadCategories();
+};
 
   const handleSubmit = async () => {
     if (!form.name.trim()) {
@@ -157,10 +156,11 @@ export default function AdminCategoriesPage() {
 
     try {
       const payload = {
-        id: form.id,
-        name: form.name,
-        slug: slugify(form.name),
-      };
+  id: form.id,
+  documentId: form.documentId,
+  name: form.name,
+  slug: slugify(form.name),
+};
 
       const res = await fetch("/api/categories", {
         method: form.id ? "PUT" : "POST",
@@ -250,7 +250,7 @@ export default function AdminCategoriesPage() {
                         </button>
 
                         <button
-                          onClick={() => handleDelete(category.id)}
+                          onClick={() => handleDelete(category.documentId)}
                           className="rounded-lg bg-[#DC2626] px-3 py-2 text-xs font-medium text-white"
                         >
                           Delete

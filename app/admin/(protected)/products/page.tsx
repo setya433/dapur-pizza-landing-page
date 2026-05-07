@@ -6,6 +6,21 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminTableToolbar from "@/components/admin/AdminPanelTableToolBar";
 import { slugify } from "@/lib/slugify";
 
+type StrapiRelation<T> = T | { data?: T | null } | null | undefined;
+
+function unwrapStrapiRelation<T>(value: StrapiRelation<T>): T | null {
+  if (!value) return null;
+
+  if (
+    typeof value === "object" &&
+    "data" in value
+  ) {
+    return value.data ?? null;
+  }
+
+  return value as T;
+}
+
 type CategoryOption = {
   id: number;
   name: string;
@@ -59,6 +74,27 @@ type StrapiImageSource = {
   };
 };
 
+// type StrapiProductSource = {
+//   documentId: string;
+//   id: number;
+//   name?: string;
+//   slug?: string;
+//   price?: number;
+//   description?: string | RichTextBlock[];
+//   badge?: string;
+//   minOrder?: string;
+//   category?: {
+//     data?: StrapiCategorySource | null;
+//   } | StrapiCategorySource | null;
+//   image?: {
+//     data?: StrapiImageSource | null;
+//   } | StrapiImageSource | null;
+//   attributes?: Omit<
+//     StrapiProductSource,
+//     "id" | "attributes"
+//   >;
+// };
+
 type StrapiProductSource = {
   documentId: string;
   id: number;
@@ -68,16 +104,9 @@ type StrapiProductSource = {
   description?: string | RichTextBlock[];
   badge?: string;
   minOrder?: string;
-  category?: {
-    data?: StrapiCategorySource | null;
-  } | StrapiCategorySource | null;
-  image?: {
-    data?: StrapiImageSource | null;
-  } | StrapiImageSource | null;
-  attributes?: Omit<
-    StrapiProductSource,
-    "id" | "attributes"
-  >;
+  category?: StrapiRelation<StrapiCategorySource>;
+  image?: StrapiRelation<StrapiImageSource>;
+  attributes?: Omit<StrapiProductSource, "id" | "attributes">;
 };
 
 const initialForm: ProductFormState = {
@@ -92,7 +121,7 @@ const initialForm: ProductFormState = {
 };
 
 const STRAPI_PUBLIC_URL =
-  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  process.env.NEXT_PUBLIC_STRAPI_URL || "https://striking-bell-1f63db83d6.strapiapp.com/";
 
 function extractText(value: string | RichTextBlock[] | undefined): string {
   if (!value) return "";
@@ -151,14 +180,48 @@ function mapCategory(item: StrapiCategorySource): CategoryOption {
   };
 }
 
+// function mapProduct(item: StrapiProductSource): ProductItem {
+//   const source = item?.attributes ? item.attributes : item;
+//   const rawCategory = item.category ??  null;
+//   const category = rawCategory ? mapCategory(rawCategory) : null;
+//   const rawImage = source.image?.data ?? source.image ?? null;
+
+//   console.log("MAPPING ITEM:", item);
+//   console.log("MAPPING Image:", source.image, "=>", rawImage);
+
+//   let image: string | null = null;
+
+//   if (rawImage?.attributes?.url) {
+//     image = rawImage.attributes.url.startsWith("http")
+//       ? rawImage.attributes.url
+//       : `${STRAPI_PUBLIC_URL}${rawImage.attributes.url}`;
+//   } else if (rawImage?.url) {
+//     image = rawImage.url.startsWith("http")
+//       ? rawImage.url
+//       : `${STRAPI_PUBLIC_URL}${rawImage.url}`;
+//   }
+
+//   return {
+//     id: item.id,
+//     name: source.name || "",
+//     documentId: item.documentId,
+//     slug: source.slug || "",
+//     price: source.price || 0,
+//     description: extractText(source.description),
+//     badge: source.badge ?? "",
+//     minOrder: source.minOrder ?? "",
+//     image,
+//     category,
+//   };
+// }
+
 function mapProduct(item: StrapiProductSource): ProductItem {
   const source = item?.attributes ? item.attributes : item;
-  const rawCategory = item.category ??  null;
-  const category = rawCategory ? mapCategory(rawCategory) : null;
-  const rawImage = source.image?.data ?? source.image ?? null;
 
-  console.log("MAPPING ITEM:", item);
-  console.log("MAPPING Image:", source.image, "=>", rawImage);
+  const rawCategory = unwrapStrapiRelation(source.category);
+  const category = rawCategory ? mapCategory(rawCategory) : null;
+
+  const rawImage = unwrapStrapiRelation(source.image);
 
   let image: string | null = null;
 
