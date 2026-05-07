@@ -108,7 +108,6 @@ export default function CartPage() {
                             alt={item.name}
                             fill
                             sizes="96px"
-                            unoptimized
                             className="object-cover"
                           />
                         </div>
@@ -187,10 +186,9 @@ export default function CartPage() {
 
                   <div className="relative mx-auto h-48 w-full max-w-[260px] overflow-hidden rounded-[24px] bg-[#43352d]">
                     <Image
-                      src="/../images/menu-pizza.png"
+                      src="/../images/menu-pizza.webp"
                       alt="Promo DapurPizza"
                       fill
-                      unoptimized
                       sizes="260px"
                       className="object-cover"
                     />

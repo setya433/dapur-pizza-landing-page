@@ -21,7 +21,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.alt}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-            unoptimized
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
 

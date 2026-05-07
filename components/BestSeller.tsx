@@ -5,21 +5,21 @@ const products = [
     title: "Paket Pizza Party",
     desc: "Cocok untuk ulang tahun, gathering, dan meeting santai.",
     price: "Mulai 150K",
-    image: "/../images/paket-pizza-party.png",
+    image: "/../images/paket-pizza-party.webp",
     alt: "Paket Pizza Party DapurPizza",
   },
   {
     title: "Paket Nasi Box Meeting",
     desc: "Pilihan praktis untuk rapat, seminar, dan pelatihan.",
     price: "Mulai 35K/box",
-    image: "/../images/paket-nasi-box-meeting.png",
+    image: "/../images/paket-nasi-box-meeting.webp",
     alt: "Paket nasi box meeting DapurPizza",
   },
   {
     title: "Snack Box Event",
     desc: "Pas untuk coffee break, pengajian, dan acara sekolah.",
     price: "Mulai 20K/box",
-    image: "/../images/paket-snack-box-event.png",
+    image: "/../images/paket-snack-box-event.webp",
     alt: "Snack box event DapurPizza",
   },
 ];
@@ -55,6 +55,7 @@ export default function BestSeller() {
                     src={item.image}
                     alt={item.alt}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 360px"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>

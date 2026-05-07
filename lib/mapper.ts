@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:1337";
+const BASE_URL = "https://striking-bell-1f63db83d6.strapiapp.com/";
 
 function blocksToText(blocks: any): string {
   if (typeof blocks === "string") return blocks;

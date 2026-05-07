@@ -55,8 +55,12 @@ export default function AdminLoginForm() {
       return;
     }
 
-    router.replace(toSafeAdminPath(result.url, callbackUrl));
-    router.refresh();
+router.replace(
+  toSafeAdminPath(
+    result.url ?? undefined,
+    callbackUrl ?? undefined
+  )
+);    router.refresh();
   }
 
   return (

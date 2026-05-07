@@ -84,7 +84,6 @@ export default function CartDrawer() {
                         alt={item.name}
                         fill
                         sizes="80px"
-                        unoptimized
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>

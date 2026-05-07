@@ -20,7 +20,7 @@ type Product = {
   price: number;
   description: string;
   badge?: string;
-  minOrder?: string;
+  minOrder?: string | number;
   image: string;
   alt: string;
   category: {

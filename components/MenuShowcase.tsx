@@ -19,11 +19,11 @@ export default function MenuShowcase() {
         <div className="relative overflow-hidden rounded-[28px] border-4 border-[#3b2418] shadow-lg">
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/../images/paket-pizza.png"
+              src="/../images/paket-pizza.webp"
               alt="Menu Pizza DapurPizza"
               fill
+              sizes="(max-width: 1400px) 100vw, 1280px"
               className="object-cover"
-              priority
             />
           </div>
         </div>
@@ -31,11 +31,11 @@ export default function MenuShowcase() {
         <div className="relative overflow-hidden rounded-[28px] border-4 border-[#3b2418] shadow-lg mt-12">
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/../images/paket-nasi-box-1.png"
+              src="/../images/paket-nasi-box-1.webp"
               alt="Menu Nasi Box DapurPizza"
               fill
+              sizes="(max-width: 1400px) 100vw, 1280px"
               className="object-contain"
-              priority
             />
           </div>
         </div>
@@ -44,11 +44,11 @@ export default function MenuShowcase() {
         <div className="relative overflow-hidden rounded-[28px] border-4 border-[#3b2418] shadow-lg mt-12">
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/../images/paket-snack-box.png"
+              src="/../images/paket-snack-box.webp"
               alt="Menu Nasi Box Snack DapurPizza"
               fill
+              sizes="(max-width: 1400px) 100vw, 1280px"
               className="object-cover"
-              priority
             />
           </div>
         </div>
@@ -75,6 +75,7 @@ export function PaketShowcase() {
               src="/images/menu-paket-banner.jpg"
               alt="Menu Paket Catering DapurPizza"
               fill
+              sizes="(max-width: 1400px) 100vw, 1280px"
               className="object-cover"
             />
           </div>

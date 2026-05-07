@@ -18,19 +18,13 @@ export default async function ProductDetailPage({
   params,
 }: {params: Promise<{ slug: string }>;}) {
   const { slug } = await params;
+  const rawProduct = await fetchProductBySlug(slug);
 
-  const Raw = await fetchProductBySlug(slug);
-  console.log("PRODUCT DETAIL DATA:", Raw);
-
-  const [dataDetail] = await Promise.all([
-      fetchProductBySlug(slug) ,
-    ]);
-  
-  const data = mapProduct(dataDetail);
-
-  if (!data) {
+  if (!rawProduct) {
     notFound();
   }
+
+  const data = mapProduct(rawProduct);
 
   return (
     <main className="min-h-screen bg-[#f7f1e8] px-4 py-8 text-[#3b2418] md:px-6 md:py-10">
@@ -49,13 +43,12 @@ export default async function ProductDetailPage({
           <section className="overflow-hidden rounded-[28px] border-4 border-[#3b2418] bg-white shadow-[8px_8px_0_#3b2418]">
             <div className="relative aspect-[4/3] w-full bg-[#fff8ef]">
               <Image
-            src={data.image}
-            alt={data.name}
-            fill
-            sizes="100vw"
-            unoptimized
-            className="object-cover"
-          />
+                src={data.image}
+                alt={data.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
             </div>
           </section>
 
