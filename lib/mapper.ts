@@ -23,6 +23,12 @@ export function mapCategory(item: any) {
 
 export function mapProduct(item: any) {
   const attr = item.attributes ?? item;
+  const imageUrl = attr.image?.url ?? "";
+  const resolvedImageUrl = imageUrl
+    ? imageUrl.startsWith("http")
+      ? imageUrl
+      : `${BASE_URL}${imageUrl}`
+    : "/images/fallback.jpg";
 
   return {
     id: attr.id ?? item.id,
@@ -34,9 +40,7 @@ export function mapProduct(item: any) {
     category: attr.category ?? null,
     badge: attr.badge ?? null,
     minOrder: Number(attr.minOrder ?? 1),
-    image: attr.image?.url
-      ? `${BASE_URL}${attr.image.url}`
-      : "/images/fallback.jpg",
+    image: resolvedImageUrl,
     alt: attr.image?.alternativeText ?? attr.name ?? "",
   };
 }

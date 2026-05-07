@@ -164,7 +164,7 @@ export default function CartDrawer() {
                         Lanjut Checkout
                     </a>
 
-                    <a
+                    {/* <a
                         href={items.length ? whatsappUrl : "#"}
                         target="_blank"
                         rel="noreferrer"
@@ -176,7 +176,7 @@ export default function CartDrawer() {
                         ].join(" ")}
                     >
                         Checkout via WhatsApp
-                    </a>
+                    </a> */}
 
                     <button
                         type="button"

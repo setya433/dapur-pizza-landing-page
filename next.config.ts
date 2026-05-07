@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "striking-bell-1f63db83d6.strapiapp.com",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "striking-bell-1f63db83d6.media.strapiapp.com",
+        pathname: "/**",
+      },
     ],
   },
 };

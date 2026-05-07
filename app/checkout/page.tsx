@@ -67,7 +67,7 @@ export default function CheckoutPage() {
       icon: "success",
       confirmButtonText: "Kirim ke WhatsApp",
       confirmButtonColor: "#25D366",
-      cancelButtonText: "Nanti saja",
+      // cancelButtonText: "Nanti saja",
       showCancelButton: true,
     });
 
