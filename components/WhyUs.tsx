@@ -28,7 +28,7 @@ export default function WhyUs() {
 
         <div className="relative min-h-[280px] overflow-hidden rounded-[22px] border-4 border-[#3b2418] sm:min-h-[360px] lg:min-h-full">
           <Image
-            src="/../images/about-catering.webp"
+            src="/images/about-catering.webp"
             alt="Tim DapurPizza menyiapkan catering"
             fill
             sizes="(max-width: 1024px) 100vw, 33vw"
