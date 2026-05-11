@@ -6,7 +6,7 @@ export default function Hero() {
       <div className="mx-auto grid max-w-7xl overflow-hidden rounded-[24px] border-4 border-[#3b2418] bg-white lg:grid-cols-2">
         <div className="relative min-h-[240px] sm:min-h-[320px] lg:min-h-[560px]">
           <Image
-            src="/../images/hero-food.webp"
+            src="/images/hero-food.webp"
             alt="Menu catering DapurPizza berupa pizza, nasi box, dan snack box"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"

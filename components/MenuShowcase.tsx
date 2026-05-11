@@ -19,7 +19,7 @@ export default function MenuShowcase() {
         <div className="relative overflow-hidden rounded-[28px] border-4 border-[#3b2418] shadow-lg">
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/../images/paket-pizza.webp"
+              src="/images/paket-pizza.webp"
               alt="Menu Pizza DapurPizza"
               fill
               sizes="(max-width: 1400px) 100vw, 1280px"
@@ -31,7 +31,7 @@ export default function MenuShowcase() {
         <div className="relative overflow-hidden rounded-[28px] border-4 border-[#3b2418] shadow-lg mt-12">
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/../images/paket-nasi-box-1.webp"
+              src="/images/paket-nasi-box-1.webp"
               alt="Menu Nasi Box DapurPizza"
               fill
               sizes="(max-width: 1400px) 100vw, 1280px"
@@ -44,7 +44,7 @@ export default function MenuShowcase() {
         <div className="relative overflow-hidden rounded-[28px] border-4 border-[#3b2418] shadow-lg mt-12">
           <div className="relative aspect-[3/2] w-full">
             <Image
-              src="/../images/paket-snack-box.webp"
+              src="/images/paket-snack-box.webp"
               alt="Menu Nasi Box Snack DapurPizza"
               fill
               sizes="(max-width: 1400px) 100vw, 1280px"

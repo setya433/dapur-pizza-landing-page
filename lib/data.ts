@@ -2,25 +2,25 @@ export const categories = [
   {
     title: "Pizza",
     desc: "Aneka pizza untuk acara kantor, ulang tahun, gathering, dan keluarga.",
-    image: "/../images/menu-pizza.webp",
+    image: "/images/menu-pizza.webp",
     alt: "Menu pizza DapurPizza untuk catering acara",
   },
   {
     title: "Nasi Box",
     desc: "Pilihan menu praktis dan mengenyangkan untuk meeting, seminar, dan event.",
-    image: "/../images/menu-nasi-box.webp",
+    image: "/images/menu-nasi-box.webp",
     alt: "Nasi box DapurPizza untuk meeting dan acara",
   },
   {
     title: "Snack Box",
     desc: "Cocok untuk coffee break, pengajian, sekolah, rapat, dan acara santai.",
-    image: "/../images/menu-snack-box.webp",
+    image: "/images/menu-snack-box.webp",
     alt: "Snack box DapurPizza untuk acara dan coffee break",
   },
   {
     title: "Paket Acara",
     desc: "Paket konsumsi lengkap untuk event formal maupun nonformal.",
-    image: "/../images/menu-paket-acara.webp",
+    image: "/images/menu-paket-acara.webp",
     alt: "Paket catering acara dari DapurPizza",
   },
 ];

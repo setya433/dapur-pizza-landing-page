@@ -258,7 +258,7 @@ export default function CheckoutPage() {
 
                   <div className="relative mx-auto h-44 w-full max-w-[240px] overflow-hidden rounded-[24px] bg-[#43352d]">
                     <Image
-                      src="/../images/menu-pizza.webp"
+                      src="/images/menu-pizza.webp"
                       alt="Checkout DapurPizza"
                       fill
                       sizes="240px"
